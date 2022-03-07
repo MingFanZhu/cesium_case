@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>多路视频投射</title>
+    <link rel="stylesheet" href="./Cesium/Widgets/widgets.css">
+    <link href="./lib/videojs/video-js.css" rel="stylesheet">
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="./lib/videojs/video.min.js"></script>
+    <script src="./Cesium/Cesium.js"></script>
+    <div id="cesiumContainer">
+    </div>
+    <script>
+        window.onload = function () {
+            document.querySelector("#cesiumContainer").style.height = window.innerHeight + 'px';
+        }
+
+        window.onresize = function () {
+            document.querySelector("#cesiumContainer").style.height = window.innerHeight + 'px';
+        }
+
+        var viewer = new Cesium.Viewer("cesiumContainer", {
+            animation: false, // 控制场景动画的播放速度控件
+            baseLayerPicker: true, // 底图切换控件
+            fullscreenButton: false, // 全屏控件
+            geocoder: false, // 地理位置查询定位控件
+            homeButton: false, // 默认相机位置控件
+            timeline: false, // 时间滚动条控件
+            infoBox: false,           //是否显示信息框
+            sceneModePicker: false, //是否显示3D/2D选择器
+            selectionIndicator: false, // 点击点绿色弹出 是否显示选取指示器组件
+            navigationHelpButton: false, // 默认的相机控制提示控件
+            scene3DOnly: true, // 每个几何实例仅以3D渲染以节省GPU内存
+            navigationInstructionsInitiallyVisible: false,
+            showRenderLoopErrors: false, //是否显示渲染错误
+            orderIndependentTranslucency: false,//设置背景透明
+        });
+        viewer.scene.globe.depthTestAgainstTerrain = true;
+        viewer._cesiumWidget._creditContainer.style.display = "none";
+        viewer.scene.debugShowFramesPerSecond = true;
+
+        var videoSrc = "./data/test.mp4";
+        var videoType = "video/mp4";
+        var videoElement = document.createElement("video");
+        videoElement.setAttribute('crossorigin', 'anonymous');
+        var player = videojs(videoElement, {
+            controls: false, // 是否显示控制条
+            preload: 'auto',
+            autoplay: true,
+            loop: true,
+            fluid: true, // 自适应宽高
+            language: 'zh-CN', // 设置语言
+            muted: true, // 是否静音
+            sources: [ // 视频源
+                {
+                    src: videoSrc,
+                    type: videoType
+                }
+            ]
+        });
+        player.play();
+
+        var viewposition = new Cesium.Cartesian3(-2541759.182777414, 4780360.433050912, 3360805.786656237);
+        var distance_tv = new Cesium.Cartesian3(-0.0025208015440811842, -0.018682260527081048, -0.9998222935607977);
+        var up = new Cesium.Cartesian3(-0.47563888715509645, 0.8795086958265218, -0.015234926694673157);
+
+        var project = new Cesium.Project(viewer, {
+            position: viewposition,
+            diretion: distance_tv,
+            up: up,
+            verticalFov: 30,
+            horizontalFov: 60,
+            near: 10,
+            far: 1000,
+            source: videoElement,
+            hasLine: true
+        });
+        project.apply();
+
+        viewer.entities.add({
+            position: new Cesium.Cartesian3.fromDegrees(118, 32, 50),
+            box: {
+                dimensions: new Cesium.Cartesian3(100, 100, 100)
+            }
+        });
+
+        viewer.camera.setView({
+            destination: viewposition,
+            orientation: {
+                direction: distance_tv,
+                up: up
+            }
+        });
+
+
+        viewer.entities.add({
+            position: new Cesium.Cartesian3.fromDegrees(117.99, 32, 50),
+            box: {
+                dimensions: new Cesium.Cartesian3(100, 100, 100)
+            }
+        });
+
+        var viewposition2 = new Cesium.Cartesian3(-2541179.4014611957, 4780614.798422396, 3360813.8913603327);
+        var distance_tv2 = new Cesium.Cartesian3(0.5083662786350557, 0.4320705465614079, -0.7449018522871798);
+        var up2 = new Cesium.Cartesian3(-0.2709603946044773, 0.9013384538360156, 0.3378897101012205);
+
+        var project2;
+        project2 = new Cesium.Project(viewer, {
+            position: viewposition2,
+            diretion: distance_tv2,
+            up: up2,
+            verticalFov: 30,
+            horizontalFov: 60,
+            near: 10,
+            far: 1500,
+            source: videoElement
+        });
+        project2.apply();
+    </script>
+</body>
+
+</html>

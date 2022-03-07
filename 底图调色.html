@@ -1,0 +1,206 @@
+<!--
+ * @Author: your name
+ * @Date: 2021-03-29 20:18:50
+ * @LastEditTime: 2021-03-30 11:02:08
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \an_dz_2_v.0.0\serve\web\example\dty\index.html
+-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8>
+    <meta http-equiv=Access-Control-Allow-Origin content=*>
+    <meta name=viewport content="width=device-width,initial-scale=1">
+    <title>底图调色</title>
+    <script src="./Cesium/Cesium.js"></script>
+    <link rel="stylesheet" href="./Cesium/Widgets/widgets.css">
+    <script src="./lib/vue/vue.min.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #uls {
+            background-color: aliceblue;
+            position: absolute;
+            left: 1em;
+            top: 2em;
+        }
+
+        #uls ul {
+            margin: 0;
+            padding: 1em;
+        }
+
+        #uls li {
+            list-style: none;
+            border: 1px solid black;
+            margin-top: 1em;
+            display: block;
+            height: 2em;
+        }
+
+        #uls li div {
+            display: inline-block;
+            width: 1em;
+            height: 2em;
+        }
+
+        #uls li label {
+            display: inline-block;
+            width: 3em;
+        }
+
+        #uls li:nth-of-type(1) {
+            margin-top: 0;
+        }
+
+        #uls li input span {
+            float: right;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cesiumContainer"></div>
+    <div id="uls">
+        <ul id="ul">
+            <li v-for="(item,index) in filters">
+                <label>{{item.title}}</label>
+                <input type="range" :min="item.min" :max="item.max" :step="item.step" v-model.number="item.value"
+                    :id="item.name" :key="item.name" oninput="change()">
+                <span>{{item.value}}</span>
+            </li>
+        </ul>
+    </div>
+    <script>
+        window.onload = function () {
+            document.querySelector("#cesiumContainer").style.height = window.innerHeight + 'px';
+        }
+
+        window.onresize = function () {
+            document.querySelector("#cesiumContainer").style.height = window.innerHeight + 'px';
+        }
+
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            animation: false, //是否显示动画控件(左下方那个)
+            baseLayerPicker: false, //是否显示图层选择控件
+            geocoder: false, //是否显示地名查找控件
+            timeline: false, //是否显示时间线控件
+            sceneModePicker: false, //是否显示投影方式控件
+            navigationHelpButton: false, //是否显示帮助信息控件
+            infoBox: false, //是否显示点击要素之后显示的信息
+            homeButton: false, //主页按钮，默认true
+            imageryProvider: new Cesium.ArcGisMapServerImageryProvider({
+                url: "http://map.geoq.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer",
+            })
+        });
+        viewer.scene.globe.depthTestAgainstTerrain = true;
+        viewer._cesiumWidget._creditContainer.style.display = "none";
+        viewer.scene.debugShowFramesPerSecond = true;
+
+        var layer = viewer.scene.imageryLayers._layers[0];
+        layer.filterIndex = ["gamma", "brightness", "contrast", "hue", "invert", "grayscale", "sepia", "saturation"]
+        function change() {
+            layer.gamma = document.querySelector('#gamma').value;
+            document.querySelector('#gamma').parentElement.querySelector("span").innerText = document.querySelector('#gamma').value;
+            layer.grayscale = document.querySelector('#grayscale').value;
+            document.querySelector('#grayscale').parentElement.querySelector("span").innerText = document.querySelector('#grayscale').value;
+            layer.contrast = document.querySelector('#contrast').value;
+            document.querySelector('#contrast').parentElement.querySelector("span").innerText = document.querySelector('#contrast').value;
+            layer.invert = document.querySelector('#invert').value;
+            document.querySelector('#invert').parentElement.querySelector("span").innerText = document.querySelector('#invert').value;
+            layer.sepia = document.querySelector('#sepia').value;
+            document.querySelector('#sepia').parentElement.querySelector("span").innerText = document.querySelector('#sepia').value;
+            layer.brightness = document.querySelector('#brightness').value;
+            document.querySelector('#brightness').parentElement.querySelector("span").innerText = document.querySelector('#brightness').value;
+            layer.hue = document.querySelector('#hue').value;
+            document.querySelector('#hue').parentElement.querySelector("span").innerText = document.querySelector('#hue').value;
+            layer.saturation = document.querySelector('#saturation').value;
+            document.querySelector('#saturation').parentElement.querySelector("span").innerText = document.querySelector('#saturation').value;
+        }
+
+        var app = new Vue({
+            el: '#uls',
+            data: {
+                filters: [
+                    {
+                        name: "gamma",
+                        title: "伽马值",
+                        value: 1.0,
+                        min: 0.0,
+                        max: 1.0,
+                        step: 0.01
+                    },
+                    {
+                        name: "brightness",
+                        title: "亮度",
+                        value: 2.15,
+                        min: 0.0,
+                        max: 3.0,
+                        step: 0.01
+                    },
+                    {
+                        name: "contrast",
+                        title: "对比度",
+                        value: 0.9,
+                        min: 0.0,
+                        max: 2.0,
+                        step: 0.01
+                    },
+                    {
+                        name: "hue",
+                        title: "色相",
+                        value: 0.0,
+                        min: -180.0,
+                        max: 180.0,
+                        step: 1.0
+                    },
+                    {
+                        name: "invert",
+                        title: "反色",
+                        value: 0.0,
+                        min: 0.0,
+                        max: 1.0,
+                        step: 0.01
+                    },
+                    {
+                        name: "grayscale",
+                        title: "灰度",
+                        value: 0.0,
+                        min: 0.0,
+                        max: 1.0,
+                        step: 0.01
+                    },
+                    {
+                        name: "sepia",
+                        title: "棕褐色",
+                        value: 0.0,
+                        min: 0.0,
+                        max: 1.0,
+                        step: 0.01
+                    },
+                    {
+                        name: "saturation",
+                        title: "饱和度",
+                        value: 1.25,
+                        min: 0.0,
+                        max: 2.0,
+                        step: 0.01
+                    }
+                ]
+            },
+            mounted() {
+                change();
+            }
+        });
+    </script>
+</body>
+
+</html>

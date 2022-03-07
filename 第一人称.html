@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="./Cesium/Cesium.js"></script>
+    <link rel="stylesheet" href="./Cesium/Widgets/widgets.css">
+    <style>
+        html,
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cesiumContainer" style="width: 100%;">
+    </div>
+    <span style="position: absolute; top: 0;">
+        <button onclick="start()">start</button>
+        <button onclick="end()">end</button>
+    </span>
+    <script>
+        window.onload = function () {
+            document.querySelector("#cesiumContainer").style.height = window.innerHeight + 'px';
+        }
+
+        window.onresize = function () {
+            document.querySelector("#cesiumContainer").style.height = window.innerHeight + 'px';
+        }
+        
+        var viewer = new Cesium.Viewer("cesiumContainer", {
+            animation: false, // 控制场景动画的播放速度控件
+            baseLayerPicker: true, // 底图切换控件
+            fullscreenButton: false, // 全屏控件
+            geocoder: false, // 地理位置查询定位控件
+            homeButton: false, // 默认相机位置控件
+            timeline: false, // 时间滚动条控件
+            infoBox: false,           //是否显示信息框
+            sceneModePicker: false, //是否显示3D/2D选择器
+            selectionIndicator: false, // 点击点绿色弹出 是否显示选取指示器组件
+            navigationHelpButton: false, // 默认的相机控制提示控件
+            scene3DOnly: true, // 每个几何实例仅以3D渲染以节省GPU内存
+            navigationInstructionsInitiallyVisible: false,
+            showRenderLoopErrors: false, //是否显示渲染错误
+            orderIndependentTranslucency: false,//设置背景透明
+        });
+        viewer.scene.globe.depthTestAgainstTerrain = true;
+        viewer._cesiumWidget._creditContainer.style.display = "none";
+        viewer.scene.debugShowFramesPerSecond = true;
+
+        var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
+            url: 'https://lab.earthsdk.com/model/70e1bbd0008e11ebae58995d10455715/tileset.json',
+            modelMatrix: Cesium.Matrix4.fromArray([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
+            maximumMemoryUsage:2048
+        }));
+        viewer.flyTo(tileset);
+    </script>
+
+    <script>
+        var handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
+        var flags = {
+            looking: false,
+            moveForward: false,
+            moveBackward: false,
+            moveUp: false,
+            moveDown: false,
+            moveLeft: false,
+            moveRight: false
+        };
+        var startMousePosition;
+        var mousePosition;
+        var x;
+        var y;
+        var stopClock = null;
+
+        function getFlagForKeyCode(keyCode) {
+            switch (keyCode) {
+                case 'W'.charCodeAt(0):
+                    return 'moveForward';
+                case 'S'.charCodeAt(0):
+                    return 'moveBackward';
+                case 'Q'.charCodeAt(0):
+                    return 'moveUp';
+                case 'E'.charCodeAt(0):
+                    return 'moveDown';
+                case 'D'.charCodeAt(0):
+                    return 'moveRight';
+                case 'A'.charCodeAt(0):
+                    return 'moveLeft';
+                default:
+                    return undefined;
+            }
+        }
+
+        function keyDown(e) {
+            var flagName = getFlagForKeyCode(e.keyCode);
+            if (typeof flagName !== 'undefined') {
+                flags[flagName] = true;
+            }
+
+            if (e.ctrlKey) {
+                document.exitPointerLock();
+            }
+        }
+
+        function keyUp(e) {
+            var flagName = getFlagForKeyCode(e.keyCode);
+            if (typeof flagName !== 'undefined') {
+                flags[flagName] = false;
+            }
+
+            if (e.key == "Control") {
+                viewer.canvas.requestPointerLock();
+            }
+        }
+
+        function mouseMove(movement) {
+            flags.looking = true;
+            // startMousePosition = { x: movement.startPosition.x, y: movement.startPosition.y };
+            // mousePosition = { x: movement.endPosition.x, y: movement.endPosition.y };
+            x = movement.movementX;
+            y = movement.movementY;
+        }
+
+        function start() {
+            viewer.canvas.requestPointerLock();
+            document.addEventListener('keydown', keyDown, false);
+            document.addEventListener('keyup', keyUp, false);
+        }
+
+        function end() {
+            document.exitPointerLock();
+            document.removeEventListener('keydown', keyDown);
+            document.removeEventListener('keyup', keyUp);
+        }
+
+        document.addEventListener('pointerlockchange', function () {
+            if (document.pointerLockElement == viewer.canvas) {
+                var scene = viewer.scene;
+                var canvas = viewer.canvas;
+                canvas.setAttribute('tabindex', '0'); // needed to put focus on the canvas
+                canvas.onclick = function () {
+                    canvas.focus();
+                };
+                var ellipsoid = viewer.scene.globe.ellipsoid;
+
+                // disable the default event handlers
+                scene.screenSpaceCameraController.enableRotate = false;
+                scene.screenSpaceCameraController.enableTranslate = false;
+                scene.screenSpaceCameraController.enableZoom = false;
+                scene.screenSpaceCameraController.enableTilt = false;
+                scene.screenSpaceCameraController.enableLook = false;
+
+                var moveRate = 0.5;
+
+                document.addEventListener('mousemove', mouseMove, false);
+
+                function updateCamera() {
+                    var camera = viewer.camera;
+
+                    if (flags.looking) {
+                        var width = canvas.clientWidth;
+                        var height = canvas.clientHeight;
+
+                        // var x = (mousePosition.x - startMousePosition.x) / width;
+                        // var y = -(mousePosition.y - startMousePosition.y) / height;
+
+                        var x_norm = x / width;
+                        var y_norm = -y / height;
+                        camera.look(camera.position,x_norm);
+                        // camera.lookRight(x_norm);
+                        camera.lookUp(y_norm);
+                        flags.looking = false;
+                    }
+                }
+
+                function updatePosition() {
+                    var camera = viewer.camera;
+                    if (flags.moveForward) {
+                        var direction=new Cesium.Cartesian3();
+                        Cesium.Cartesian3.cross(camera.rightWC,camera.position,direction);
+                        Cesium.Cartesian3.normalize (direction.clone(), direction);
+                        camera.move(direction,-moveRate);
+                        // camera.moveForward(moveRate);
+                    }
+                    if (flags.moveBackward) {
+                        var direction=new Cesium.Cartesian3();
+                        Cesium.Cartesian3.cross(camera.rightWC,camera.position,direction);
+                        Cesium.Cartesian3.normalize (direction.clone(), direction);
+                        camera.move(direction,moveRate);
+                        // camera.moveBackward(moveRate);
+                    }
+                    if (flags.moveUp) {
+                        var direction=new Cesium.Cartesian3();
+                        Cesium.Cartesian3.normalize (camera.position, direction);
+                        camera.move(direction,-moveRate);
+                        // camera.moveUp(moveRate);
+                    }
+                    if (flags.moveDown) {
+                        var direction=new Cesium.Cartesian3();
+                        Cesium.Cartesian3.normalize (camera.position, direction);
+                        camera.move(direction,moveRate);
+                        // camera.moveDown(moveRate);
+                    }
+                    if (flags.moveLeft) {
+                        camera.moveLeft(moveRate);
+                    }
+                    if (flags.moveRight) {
+                        camera.moveRight(moveRate);
+                    }
+                }
+
+                scene.preUpdate.addEventListener(updateCamera);
+                scene.preUpdate.addEventListener(updatePosition);
+            } else {
+                var scene = viewer.scene;
+                var canvas = viewer.canvas;
+                scene.screenSpaceCameraController.enableRotate = true;
+                scene.screenSpaceCameraController.enableTranslate = true;
+                scene.screenSpaceCameraController.enableZoom = true;
+                scene.screenSpaceCameraController.enableTilt = true;
+                scene.screenSpaceCameraController.enableLook = true;
+
+                // handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOWN);
+                // handler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+                // handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_UP);
+
+                document.removeEventListener('mousemove', mouseMove);
+                // stopClock();
+                scene.preUpdate.removeEventListener(scene.preUpdate._listeners[0]);
+                scene.preUpdate.removeEventListener(scene.preUpdate._listeners[0]);
+            }
+        });
+    </script>
+</body>
+
+</html>

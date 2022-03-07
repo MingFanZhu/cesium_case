@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>物体编辑轴</title>
+    <link rel="stylesheet" href="./Cesium/Widgets/widgets.css">
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #buttons {
+            background-color: aquamarine;
+            position: absolute;
+            top: 1em;
+            left: 2em;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="./Cesium/Cesium.js"></script>
+    <script src="./js/control.js"></script>
+    <script src="./js/objectControl.js"></script>
+    <div id="cesiumContainer">
+    </div>
+    <div id="buttons">
+        左击坐标轴后平移旋转，右键确认
+        <br>
+        <button onclick="start()">编辑</button>
+        <button onclick="end()">完成</button>
+    </div>
+    <script>
+        window.onload = function () {
+            document.querySelector("#cesiumContainer").style.height = window.innerHeight + 'px';
+        }
+
+        window.onresize = function () {
+            document.querySelector("#cesiumContainer").style.height = window.innerHeight + 'px';
+        }
+
+        var viewer = new Cesium.Viewer("cesiumContainer", {
+            animation: false, // 控制场景动画的播放速度控件
+            baseLayerPicker: true, // 底图切换控件
+            fullscreenButton: false, // 全屏控件
+            geocoder: false, // 地理位置查询定位控件
+            homeButton: false, // 默认相机位置控件
+            timeline: false, // 时间滚动条控件
+            infoBox: false,           //是否显示信息框
+            sceneModePicker: false, //是否显示3D/2D选择器
+            selectionIndicator: false, // 点击点绿色弹出 是否显示选取指示器组件
+            navigationHelpButton: false, // 默认的相机控制提示控件
+            scene3DOnly: true, // 每个几何实例仅以3D渲染以节省GPU内存
+            navigationInstructionsInitiallyVisible: false,
+            showRenderLoopErrors: false, //是否显示渲染错误
+            orderIndependentTranslucency: false,//设置背景透明
+        });
+        viewer.scene.globe.depthTestAgainstTerrain = true;
+        viewer._cesiumWidget._creditContainer.style.display = "none";
+        viewer.scene.debugShowFramesPerSecond = true;
+
+        var tileset = viewer.scene.primitives.add(
+            new Cesium.Cesium3DTileset({
+                url: "./data/tileset/tileset.json"
+            })
+        );
+        viewer.flyTo(this.tileset);
+
+        var control;
+        function start() {
+            control = new objectControl(viewer, tileset, tileset.root.boundingSphere.center, "world");
+        }
+
+        function end(){
+            control.destroy();
+        }
+    </script>
+</body>
+
+</html>
