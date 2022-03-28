@@ -28,8 +28,8 @@ function primitiveInLocalCoordinateCallback(transform) {
 
 function primitiveInWorldCoordinateCallback(transform) {
     var newModelMatrix = Cesium.Matrix4.multiply(this.modelToWorld, transform, new Cesium.Matrix4);
-    Cesium.Matrix4.multiply(newModelMatrix, this.modelMatrix, newModelMatrix);
-    this.object.modelMatrix = Cesium.Matrix4.multiply(newModelMatrix, this.worldToModel, new Cesium.Matrix4);
+    Cesium.Matrix4.multiply(newModelMatrix, this.worldToModel, newModelMatrix);
+    this.object.modelMatrix = Cesium.Matrix4.multiply(newModelMatrix, this.modelMatrix, new Cesium.Matrix4);
 }
 
 objectControl.prototype.destroy = function () {

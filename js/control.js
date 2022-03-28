@@ -52,7 +52,8 @@ Control.prototype.init = function () {
       arcType: Cesium.ArcType.NONE,
       material: new Cesium.PolylineArrowMaterialProperty(
         Cesium.Color.RED
-      )
+      ),
+      depthTest:false
     },
   });
   this.yAxis = this.viewer.entities.add({
@@ -66,7 +67,8 @@ Control.prototype.init = function () {
       arcType: Cesium.ArcType.NONE,
       material: new Cesium.PolylineArrowMaterialProperty(
         Cesium.Color.GREEN
-      )
+      ),
+      depthTest:false
     },
   });
   this.zAxis = this.viewer.entities.add({
@@ -80,7 +82,8 @@ Control.prototype.init = function () {
       arcType: Cesium.ArcType.NONE,
       material: new Cesium.PolylineArrowMaterialProperty(
         Cesium.Color.BLUE
-      )
+      ),
+      depthTest:false
     },
   });
 
@@ -116,7 +119,8 @@ Control.prototype.init = function () {
         return this.circlePositionXOY;
       }.bind(this), false),
       width: 10,
-      material: Cesium.Color.BLUE
+      material: Cesium.Color.BLUE,
+      depthTest:false
     }
   });
   this.xoz = this.viewer.entities.add({
@@ -127,7 +131,8 @@ Control.prototype.init = function () {
         return this.circlePositionXOZ;
       }.bind(this), false),
       width: 10,
-      material: Cesium.Color.GREEN
+      material: Cesium.Color.GREEN,
+      depthTest:false
     }
   });
   this.yoz = this.viewer.entities.add({
@@ -138,7 +143,8 @@ Control.prototype.init = function () {
         return this.circlePositionYOZ;
       }.bind(this), false),
       width: 10,
-      material: Cesium.Color.RED
+      material: Cesium.Color.RED,
+      depthTest:false
     }
   });
 
