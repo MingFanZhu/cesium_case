@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>物体编辑轴</title>
+    <link rel="stylesheet" href="./Cesium/Widgets/widgets.css">
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #tool {
+            position: absolute;
+            z-index: 10;
+            top: 2em;
+            left: 2em;
+            background-color: rgba(240, 248, 255, 0.719);
+        }
+
+        #tool span {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="./Cesium/Cesium.js"></script>
+    <div id="cesiumContainer">
+    </div>
+    <div id="tool">
+        <span>线宽:<input type="range" min=0.5 max=2.5 value=1.0 step=0.1
+                oninput="lineWidthChange(this)"><label>1.0</label></span>
+        <span>法线夹角:<input type="range" min=0 max=120 value=30
+                oninput="thresholdAngleChange(this)"><label>30</label></span>
+        <span>透明度:<input type="range" min=0.0 max=1.0 value=1.0 step=0.1
+                oninput="alphaChange(this)"><label>1.0</label></span>
+        <span>颜色:<input type="color" oninput="edgeColorChange(this)"></span>
+    </div>
+    <script>
+        window.onload = function () {
+            document.querySelector("#cesiumContainer").style.height = window.innerHeight + 'px';
+        }
+
+        window.onresize = function () {
+            document.querySelector("#cesiumContainer").style.height = window.innerHeight + 'px';
+        }
+
+        var viewer = new Cesium.Viewer("cesiumContainer", {
+            animation: false, // 控制场景动画的播放速度控件
+            baseLayerPicker: true, // 底图切换控件
+            fullscreenButton: false, // 全屏控件
+            geocoder: false, // 地理位置查询定位控件
+            homeButton: false, // 默认相机位置控件
+            timeline: false, // 时间滚动条控件
+            infoBox: false,           //是否显示信息框
+            sceneModePicker: false, //是否显示3D/2D选择器
+            selectionIndicator: false, // 点击点绿色弹出 是否显示选取指示器组件
+            navigationHelpButton: false, // 默认的相机控制提示控件
+            scene3DOnly: true, // 每个几何实例仅以3D渲染以节省GPU内存
+            navigationInstructionsInitiallyVisible: false,
+            showRenderLoopErrors: false, //是否显示渲染错误
+            orderIndependentTranslucency: false,//设置背景透明
+        });
+        viewer.scene.globe.depthTestAgainstTerrain = true;
+        viewer._cesiumWidget._creditContainer.style.display = "none";
+        viewer.scene.debugShowFramesPerSecond = true;
+
+        var tileset = viewer.scene.primitives.add(
+            new Cesium.Cesium3DTileset({
+                url: "./data/tileset/tileset.json"
+            })
+        );
+        viewer.flyTo(this.tileset);
+
+        var edgemode = new Cesium.EdgeMode(viewer, {
+            target: tileset,
+            lineWidth: 1
+        });
+
+        function lineWidthChange(e) {
+            var value = parseFloat(e.value);
+            edgemode.lineWidth = value;
+            e.parentElement.querySelector("label").innerHTML = e.value;
+        }
+
+        function thresholdAngleChange(e) {
+            var value = parseFloat(e.value);
+            edgemode.thresholdAngle = value;
+            e.parentElement.querySelector("label").innerHTML = e.value;
+        }
+
+        function alphaChange(e) {
+            var value = parseFloat(e.value);
+            edgemode.alpha = value;
+            e.parentElement.querySelector("label").innerHTML = e.value;
+        }
+
+        function edgeColorChange(e) {
+            edgemode.edgeColor = Cesium.Color.fromCssColorString(e.value);
+        }
+    </script>
+</body>
+
+</html>
