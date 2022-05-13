@@ -12604,7 +12604,13 @@ export enum PixelFormat {
     /**
      * A pixel format containing red, green, blue, and alpha channels that is BC7 compressed.
      */
-    RGBA_BC7 = WebGLConstants.COMPRESSED_RGBA_BPTC_UNORM
+    RGBA_BC7 = WebGLConstants.COMPRESSED_RGBA_BPTC_UNORM,
+    RED = WebGLConstants.RED,
+    RG = WebGLConstants.RG,
+    RED_INTEGER = WebGLConstants.RED_INTEGER,
+    RG_INTEGER = WebGLConstants.RG_INTEGER,
+    RGB_INTEGER = WebGLConstants.RGB_INTEGER,
+    RGBA_INTEGER = WebGLConstants.RGBA_INTEGER
 }
 
 /**
@@ -30381,6 +30387,26 @@ export class DiscardMissingTileImagePolicy {
 }
 
 /**
+ * @param [options.lineWidth = 1.0] - 线宽
+ * @param [options.edgeColor] - 线的颜色
+ * @param [options.thresholdAngle = 45] - 法线夹角，单位度
+ * @param [options.alpha = 1.0] - 透明度
+ */
+export class EdgeMode {
+    constructor(viewer: Viewer, options: {
+        target: Cesium3DTileset;
+        lineWidth?: number;
+        edgeColor?: Color;
+        thresholdAngle?: number;
+        alpha?: number;
+    });
+    /**
+     * 销毁
+     */
+    destroy(): void;
+}
+
+/**
  * An appearance for geometry on the surface of the ellipsoid like {@link PolygonGeometry}
  * and {@link RectangleGeometry}, which supports all materials like {@link MaterialAppearance}
  * with {@link MaterialAppearance.MaterialSupport.ALL}.  However, this appearance requires
@@ -40895,6 +40921,41 @@ export class ViewportQuad {
 }
 
 /**
+ * 体渲染对象
+ * @param options - Object with the following properties:
+ * @param options.boxGeometry - Object with the following properties:
+ * @param options.boxGeometry.minimum - 最小点
+ * @param options.boxGeometry.maximum - 最大点
+ * @param [options.boxGeometry.vertexFormat = VertexFormat.DEFAULT] - 需要的顶点数据
+ * @param options.modelMatrix - 世界矩阵
+ * @param options.vertexShaderSource - 顶点着色器代码
+ * @param options.fragmentShaderSource - 片元着色器代码
+ * @param options.uniformmap - 静态变量
+ * @param options.translucent - 半透明
+ * @param options.texture - 3D纹理
+ */
+export class VolumeGraphics {
+    constructor(options: {
+        boxGeometry: {
+            minimum: Cartesian3;
+            maximum: Cartesian3;
+            vertexFormat?: VertexFormat;
+        };
+        modelMatrix: Matrix4;
+        vertexShaderSource: string;
+        fragmentShaderSource: string;
+        uniformmap: any;
+        translucent: boolean;
+        texture: any;
+    });
+    update(frameState: any): void;
+    /**
+     * 销毁
+     */
+    destroy(): void;
+}
+
+/**
  * EPSG codes known to include reverse axis orders, but are not within 4000-5000.
  */
 export const includesReverseAxis: number[];
@@ -44384,6 +44445,7 @@ declare module "cesium/Source/Scene/DebugModelMatrixPrimitive" { import { DebugM
 declare module "cesium/Source/Scene/DirectionalLight" { import { DirectionalLight } from 'cesium'; export default DirectionalLight; }
 declare module "cesium/Source/Scene/DiscardEmptyTileImagePolicy" { import { DiscardEmptyTileImagePolicy } from 'cesium'; export default DiscardEmptyTileImagePolicy; }
 declare module "cesium/Source/Scene/DiscardMissingTileImagePolicy" { import { DiscardMissingTileImagePolicy } from 'cesium'; export default DiscardMissingTileImagePolicy; }
+declare module "cesium/Source/Scene/EdgeMode" { import { EdgeMode } from 'cesium'; export default EdgeMode; }
 declare module "cesium/Source/Scene/EllipsoidSurfaceAppearance" { import { EllipsoidSurfaceAppearance } from 'cesium'; export default EllipsoidSurfaceAppearance; }
 declare module "cesium/Source/Scene/Expression" { import { Expression } from 'cesium'; export default Expression; }
 declare module "cesium/Source/Scene/Fog" { import { Fog } from 'cesium'; export default Fog; }
@@ -44453,6 +44515,7 @@ declare module "cesium/Source/Scene/TimeDynamicImagery" { import { TimeDynamicIm
 declare module "cesium/Source/Scene/TimeDynamicPointCloud" { import { TimeDynamicPointCloud } from 'cesium'; export default TimeDynamicPointCloud; }
 declare module "cesium/Source/Scene/UrlTemplateImageryProvider" { import { UrlTemplateImageryProvider } from 'cesium'; export default UrlTemplateImageryProvider; }
 declare module "cesium/Source/Scene/ViewportQuad" { import { ViewportQuad } from 'cesium'; export default ViewportQuad; }
+declare module "cesium/Source/Scene/VolumeGraphics" { import { VolumeGraphics } from 'cesium'; export default VolumeGraphics; }
 declare module "cesium/Source/Scene/WebMapServiceImageryProvider" { import { WebMapServiceImageryProvider } from 'cesium'; export default WebMapServiceImageryProvider; }
 declare module "cesium/Source/Scene/WebMapTileServiceImageryProvider" { import { WebMapTileServiceImageryProvider } from 'cesium'; export default WebMapTileServiceImageryProvider; }
 declare module "cesium/Source/Widgets/ClockViewModel" { import { ClockViewModel } from 'cesium'; export default ClockViewModel; }
